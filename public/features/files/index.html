@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>File Sharing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/core/css/base.css"/>
+<link rel="stylesheet" href="/features/files/files.css"/>
+</head>
+<body>
+<div class="files-wrap">
+  <div class="files-header">
+    <h3>File Sharing</h3>
+    <p>Share files with everyone in the room</p>
+  </div>
+  <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="drop-icon">📁</div>
+    <div class="drop-text">Click or drag files here</div>
+    <div class="drop-sub">Max 10MB per file</div>
+    <input type="file" id="file-input" multiple style="display:none" onchange="handleFiles(this.files)"/>
+  </div>
+  <div class="files-list" id="files-list">
+    <div class="files-empty">No files shared yet</div>
+  </div>
+</div>
+<script src="/features/files/files.js"></script>
+</body>
+</html>

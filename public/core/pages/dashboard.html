@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>StudyRoom — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/core/css/base.css"/>
+<link rel="stylesheet" href="/core/css/dashboard.css"/>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="dot"></span> StudyRoom</div>
+    <div class="nav-item active" onclick="setPanel('home',this)"><span class="nav-icon">⌂</span> Home</div>
+    <div class="nav-item" onclick="setPanel('rooms',this)"><span class="nav-icon">◻</span> My Rooms</div>
+    <div class="nav-item" onclick="setPanel('schedule',this)"><span class="nav-icon">◷</span> Schedule</div>
+    <div class="nav-item" onclick="window.location.href='/lobby'"><span class="nav-icon">🌐</span> Public Lobby</div>
+    <hr class="sidebar-sep"/>
+    <div class="nav-item" onclick="setPanel('settings',this)"><span class="nav-icon">⚙</span> Settings</div>
+    <div class="sidebar-user" onclick="logout()">
+      <div class="avatar" id="sb-avatar">?</div>
+      <div class="sidebar-user-info"><strong id="sb-name">...</strong><span>🟢 Online</span></div>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="panel active" id="panel-home">
+      <div class="panel-title" id="greeting">Good day 👋</div>
+      <p class="panel-sub">Ready to study? Create a room or join one.</p>
+      <div class="action-grid">
+        <div class="action-card create" onclick="openCreate()">
+          <div class="card-icon">✦</div>
+          <h3>Create a room</h3>
+          <p>Start a session, get a code + PIN to share</p>
+        </div>
+        <div class="action-card" onclick="openJoin()">
+          <div class="card-icon">→</div>
+          <h3>Join with code</h3>
+          <p>Enter a room code and PIN to join</p>
+        </div>
+        <div class="action-card lobby" onclick="window.location.href='/lobby'">
+          <div class="card-icon">🌐</div>
+          <h3>Public lobby</h3>
+          <p>Browse and join live public study rooms</p>
+        </div>
+        <div class="action-card" onclick="openJoinLink()">
+          <div class="card-icon">🔗</div>
+          <h3>Join via link</h3>
+          <p>Paste a room invite link to join directly</p>
+        </div>
+      </div>
+      <div class="section-label">Recent rooms</div>
+      <div class="room-list" id="recent-rooms"><div style="font-size:13px;color:var(--hint);padding:10px 0">Loading...</div></div>
+    </div>
+    <div class="panel" id="panel-rooms">
+      <div class="panel-title">My Rooms</div>
+      <p class="panel-sub">All rooms you've created</p>
+      <div class="room-list" id="my-rooms-list"><div style="font-size:13px;color:var(--hint);padding:10px 0">Loading...</div></div>
+    </div>
+    <div class="panel" id="panel-schedule">
+      <div class="panel-title">Schedule</div>
+      <p class="panel-sub">Upcoming sessions will appear here.</p>
+      <div style="font-size:13px;color:var(--hint);margin-top:1rem">📅 No sessions scheduled yet.</div>
+    </div>
+    <div class="panel" id="panel-settings">
+      <div class="panel-title">Settings</div>
+      <p class="panel-sub">Account preferences</p>
+      <div class="field" style="max-width:300px"><label>Display name</label><input type="text" id="settings-name" readonly style="background:var(--bg2)"/></div>
+      <div class="field" style="max-width:300px"><label>Email</label><input type="email" id="settings-email" readonly style="background:var(--bg2)"/></div>
+      <button class="btn-primary" style="max-width:300px;margin-top:0.5rem" onclick="logout()">Logout</button>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-create">
+  <div class="modal">
+    <h2>Create a room</h2>
+    <p class="sub">Customize and share with your study partners</p>
+    <div class="field"><label>Room name</label><input type="text" id="room-name-input" placeholder="Physics Group Study"/></div>
+    <div class="field"><label>Topic</label>
+      <select id="room-topic">
+        <option>General</option><option>Physics</option><option>Math</option>
+        <option>Chemistry</option><option>Biology</option><option>History</option>
+        <option>English</option><option>Computer Science</option>
+      </select>
+    </div>
+    <div class="toggle-row">
+      <label>Make room public (visible in lobby)</label>
+      <label class="toggle"><input type="checkbox" id="room-public"/><span class="toggle-slider"></span></label>
+    </div>
+    <div id="code-section" class="hidden">
+      <div class="token-box">
+        <div>
+          <div class="token-text" id="room-code-display">------</div>
+          <div class="pin-text">PIN: <span id="room-pin-display" style="font-family:var(--mono);font-weight:700;color:var(--text)">----</span></div>
+        </div>
+        <button class="copy-btn" onclick="copyCode()">Copy all</button>
+      </div>
+      <div class="share-link-box">
+        <span id="share-link-text">generating link...</span>
+        <button class="copy-btn" onclick="copyLink()">Copy link</button>
+      </div>
+    </div>
+    <p class="modal-note">⏱ Room expires in 24 hours</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-create')">Cancel</button>
+      <button class="btn-go" id="create-btn" onclick="handleCreate()">Create Room</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-join">
+  <div class="modal">
+    <h2>Join a room</h2>
+    <p class="sub">Enter the 6-character code and 4-digit PIN</p>
+    <div id="join-err" class="error-msg hidden"></div>
+    <input type="text" class="code-input" id="join-code" placeholder="ABC123" maxlength="6" oninput="this.value=this.value.toUpperCase()"/>
+    <input type="text" class="pin-input" id="join-pin" placeholder="0000" maxlength="4" inputmode="numeric"/>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-join')">Cancel</button>
+      <button class="btn-go" onclick="doJoinFromDash()">Join →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-link">
+  <div class="modal">
+    <h2>Join via link</h2>
+    <p class="sub">Paste the invite link you received</p>
+    <div id="link-err" class="error-msg hidden"></div>
+    <div class="field"><label>Invite link</label><input type="text" id="link-input" placeholder="http://localhost:3000/join/ABC123"/></div>
+    <div class="field"><label>Room PIN</label><input type="text" id="link-pin" placeholder="0000" maxlength="4" inputmode="numeric" style="font-family:var(--mono);font-size:18px;letter-spacing:0.15em;text-align:center"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-link')">Cancel</button>
+      <button class="btn-go" onclick="doJoinLink()">Join →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/core/js/api.js"></script>
+<script src="/core/js/dashboard.js"></script>
+</body>
+</html>

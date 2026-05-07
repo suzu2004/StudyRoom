@@ -1,0 +1,59 @@
+const rooms = new Map();
+
+function setupCoreHandlers(io) {
+  require('./features/whiteboard')(io, rooms);
+  require('./features/timer')(io, rooms);
+  require('./features/reactions')(io, rooms);
+
+  io.on('connection', (socket) => {
+
+    socket.on('join-room', ({ roomCode, user }) => {
+      socket.join(roomCode);
+      if (!rooms.has(roomCode)) rooms.set(roomCode, { users: new Map() });
+      rooms.get(roomCode).users.set(socket.id, { name: user.name, id: user.id || null, guest: user.guest || false });
+      socket.data = { roomCode, user };
+
+      socket.to(roomCode).emit('user-joined', { socketId: socket.id, user });
+
+      const peers = [];
+      rooms.get(roomCode).users.forEach((u, sid) => {
+        if (sid !== socket.id) peers.push({ socketId: sid, user: u });
+      });
+      socket.emit('room-peers', peers);
+      io.to(roomCode).emit('room-count', rooms.get(roomCode).users.size);
+    });
+
+    socket.on('offer', ({ to, offer }) => io.to(to).emit('offer', { from: socket.id, offer }));
+    socket.on('answer', ({ to, answer }) => io.to(to).emit('answer', { from: socket.id, answer }));
+    socket.on('ice-candidate', ({ to, candidate }) => io.to(to).emit('ice-candidate', { from: socket.id, candidate }));
+
+    socket.on('cursor-move', ({ roomCode, x, y }) => {
+      socket.to(roomCode).emit('cursor-move', { socketId: socket.id, name: socket.data?.user?.name, x, y });
+    });
+
+    socket.on('chat-message', ({ roomCode, message }) => {
+      io.to(roomCode).emit('chat-message', {
+        socketId: socket.id,
+        name: socket.data?.user?.name,
+        message,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+    });
+
+    socket.on('media-state', ({ roomCode, video, audio }) => {
+      socket.to(roomCode).emit('peer-media-state', { socketId: socket.id, video, audio });
+    });
+
+    socket.on('disconnect', () => {
+      const { roomCode } = socket.data || {};
+      if (!roomCode || !rooms.has(roomCode)) return;
+      rooms.get(roomCode).users.delete(socket.id);
+      socket.to(roomCode).emit('user-left', { socketId: socket.id });
+      const count = rooms.get(roomCode).users.size;
+      io.to(roomCode).emit('room-count', count);
+      if (count === 0) rooms.delete(roomCode);
+    });
+  });
+}
+
+module.exports = { setupCoreHandlers };

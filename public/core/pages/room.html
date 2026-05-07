@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>StudyRoom — Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/core/css/base.css"/>
+<link rel="stylesheet" href="/core/css/room.css"/>
+</head>
+<body>
+<div class="room-page" id="room-page">
+  <div class="perm-banner" id="perm-banner">
+    <span>📷 StudyRoom needs camera & microphone access for video calls</span>
+    <button class="perm-allow" onclick="requestMedia()">Allow Access</button>
+  </div>
+  <header class="room-header">
+    <button class="room-back" onclick="leaveRoom()">← Back</button>
+    <div class="room-header-title" id="room-name-title">Study Room</div>
+    <div class="room-code-badge" id="room-code-badge">------</div>
+    <div class="online-indicator"><div class="online-dot"></div><span id="online-count">1</span></div>
+  </header>
+  <div class="room-body">
+    <div class="video-area" id="video-area">
+      <div class="video-grid" id="video-grid">
+        <div class="video-tile you" id="tile-self">
+          <video id="local-video" autoplay muted playsinline></video>
+          <div class="tile-avatar" id="self-avatar">?</div>
+          <div class="tile-name" id="self-name">You</div>
+          <div class="tile-you-tag">You</div>
+          <div class="tile-mic-off hidden" id="self-mic-off">🔇</div>
+        </div>
+      </div>
+      <div class="cursor-overlay" id="cursor-overlay"></div>
+    </div>
+    <div class="room-sidebar">
+      <div class="rsb-tabs">
+        <div class="rsb-tab active" id="tab-people" onclick="setTab('people')">👥 People</div>
+        <div class="rsb-tab" id="tab-chat" onclick="setTab('chat')">💬 Chat</div>
+      </div>
+      <div class="rsb-panel active" id="rsb-people"><div id="people-list"></div></div>
+      <div class="rsb-panel" id="rsb-chat">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." maxlength="200"/>
+          <button class="chat-send" onclick="sendChat()">↑</button>
+        </div>
+      </div>
+    </div>
+    <div class="feat-rail">
+      <div class="feat-btn" id="feat-wb" onclick="toggleFeature('whiteboard')" title="Whiteboard">✏️<span class="feat-tooltip">Whiteboard</span></div>
+      <div class="feat-btn" id="feat-timer" onclick="toggleFeature('timer')" title="Timer">⏱<span class="feat-tooltip">Pomodoro</span></div>
+      <div class="feat-btn" id="feat-react" onclick="sendReaction('✋')" title="Raise hand">✋<span class="feat-tooltip">Raise hand</span></div>
+      <div class="feat-btn" id="feat-emoji" onclick="toggleEmojiPicker()" title="Reactions">😊<span class="feat-tooltip">Reactions</span></div>
+      <div class="feat-btn" id="feat-files" onclick="toggleFeature('files')" title="Files">📁<span class="feat-tooltip">Files</span></div>
+    </div>
+    <div class="feat-panel-wrap" id="feat-panel-wrap">
+      <div class="feat-panel-header">
+        <span id="feat-panel-title">Feature</span>
+        <button class="feat-close" onclick="closeFeature()">✕</button>
+      </div>
+      <div class="feat-panel-body" id="feat-panel-body"></div>
+    </div>
+  </div>
+  <div class="controls-bar">
+    <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()" title="Mic">🎙️</button>
+    <button class="ctrl-btn" id="btn-cam" onclick="toggleCam()" title="Camera">📷</button>
+    <button class="ctrl-btn" id="btn-screen" onclick="toggleScreen()" title="Screen share">🖥️</button>
+    <button class="ctrl-btn" id="btn-hand" onclick="sendReaction('✋')" title="Raise hand">✋</button>
+    <button class="ctrl-end" onclick="leaveRoom()">End</button>
+  </div>
+</div>
+<div id="emoji-picker" style="position:fixed;bottom:80px;right:260px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:10px;display:none;gap:8px;flex-wrap:wrap;width:180px;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,0.1)">
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('👍')">👍</span>
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('❤️')">❤️</span>
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('😂')">😂</span>
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('🎉')">🎉</span>
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('🔥')">🔥</span>
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('👏')">👏</span>
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('😮')">��</span>
+  <span style="font-size:20px;cursor:pointer" onclick="sendReaction('🤔')">🤔</span>
+</div>
+<div class="toast" id="toast"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/core/js/api.js"></script>
+<script src="/core/js/room.js"></script>
+</body>
+</html>
