@@ -271,6 +271,19 @@ function sendChat() {
   const input = document.getElementById('chat-input');
   const message = input.value.trim();
   if (!message) return;
+
+  // 🎧 CHIP COMMAND DETECTION
+  if (message.startsWith("/")) {
+    socket.emit("chip:command", {
+      raw: message,
+      roomId: roomCode   // VERY IMPORTANT
+    });
+
+    input.value = "";
+    return;
+  }
+
+  // normal chat
   socket.emit('chat-message', { roomCode, message });
   input.value = '';
 }
@@ -287,6 +300,7 @@ socket.on('chat-message', ({ socketId, name, message, time }) => {
   const msgs = document.getElementById('chat-messages');
   const div = document.createElement('div');
   div.className = 'chat-msg' + (isMe ? ' mine' : '');
+
   // Check if message is purely emoji
   const isEmojiOnly = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\u200D)+$/u.test(message) && message.length <= 8;
   const bubbleContent = isEmojiOnly
@@ -300,6 +314,21 @@ socket.on('chat-message', ({ socketId, name, message, time }) => {
     document.getElementById('tab-chat').style.color = 'var(--warning)';
     document.getElementById('tab-chat').style.fontWeight = '700';
   }
+});
+
+  socket.on("chip:message", ({ text }) => {
+  const msgs = document.getElementById('chat-messages');
+
+  const div = document.createElement('div');
+  div.className = 'chat-msg';
+
+  div.innerHTML = `
+    <div class="msg-sender">🤖 Chip</div>
+    <div class="msg-bubble">${text}</div>
+  `;
+
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
 });
 
 function appendSystemMessage(text) {
@@ -502,3 +531,65 @@ function getCursorColor(socketId) {
   }
   return peerColors[socketId];
 }
+let player;
+let playerReady = false;
+let pendingState = null; 
+window.onYouTubeIframeAPIReady = function () {
+  player = new YT.Player("yt-player", {
+    height: "200",   // 👈 make visible for testing
+    width: "300",
+    videoId: "",
+    playerVars: { autoplay: 1 },
+    events: {
+      onReady: (event) => {
+  console.log("✅ Player Ready");
+  playerReady = true;
+  event.target.unMute();
+  event.target.setVolume(100);
+
+  if (pendingState) {
+    console.log("▶️ Playing pending song...");
+    playSong(pendingState);
+    pendingState = null;
+  }
+}
+    }
+  });
+};
+socket.on("chip:state", (state) => {
+  console.log("STATE:", state);
+  if (!state.currentSong) return;
+
+  if (!playerReady) {
+    console.log("⏳ Player not ready, saving...");
+    pendingState = state;
+    return;
+  }
+
+  playSong(state);
+});
+
+function playSong(state) {
+  const videoId = state.currentSong.videoId;
+  console.log("🎥 VIDEO ID:", videoId);
+  if (!videoId) return;
+
+  player.loadVideoById(videoId);
+
+  setTimeout(() => {
+    player.unMute();
+    player.setVolume(100);
+    if (state.isPlaying) {
+      player.playVideo();
+      console.log("▶️ Playing now");
+    } else {
+      player.pauseVideo();
+    }
+  }, 1000);
+}
+document.addEventListener("click", () => {
+  if (player) {
+    player.playVideo();
+    console.log("🔓 Audio unlocked");
+  }
+}, { once: true });

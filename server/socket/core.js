@@ -1,8 +1,10 @@
+
 import whiteboardHandler from './features/whiteboard.js';
 import timerHandler from './features/timer.js';
 import reactionsHandler from './features/reactions.js';
-
+import { handleChipCommand } from "../chipBot.js";
 const rooms = new Map();
+
 
 export function setupCoreHandlers(io) {
   whiteboardHandler(io, rooms);
@@ -57,5 +59,10 @@ export function setupCoreHandlers(io) {
       io.to(roomCode).emit('room-count', count);
       if (count === 0) rooms.delete(roomCode);
     });
+
+    socket.on("chip:command", async ({ raw, roomId }) => {
+     await handleChipCommand(raw, roomId, io);
+});
   });
+  
 }
