@@ -1,0 +1,2 @@
+.reaction-burst{position:absolute;font-size:24px;pointer-events:none;animation:burst 0.8s ease-out forwards;z-index:99}
+@keyframes burst{0%{transform:scale(0) translateY(0);opacity:1}100%{transform:scale(2.5) translateY(-40px);opacity:0}}

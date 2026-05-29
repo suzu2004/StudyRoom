@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Pomodoro Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/core/css/base.css"/>
+<link rel="stylesheet" href="/features/timer/timer.css"/>
+</head>
+<body>
+<div class="timer-wrap">
+  <div class="timer-modes">
+    <button class="mode-btn active" id="mode-focus" onclick="setMode(25,'Focus')">Focus</button>
+    <button class="mode-btn" id="mode-short" onclick="setMode(5,'Short Break')">Short Break</button>
+    <button class="mode-btn" id="mode-long" onclick="setMode(15,'Long Break')">Long Break</button>
+  </div>
+  <div class="timer-circle-wrap">
+    <svg class="timer-ring-svg" viewBox="0 0 120 120">
+      <circle class="ring-bg" cx="60" cy="60" r="54"/>
+      <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="54"/>
+    </svg>
+    <div class="timer-center">
+      <div class="timer-display" id="timer-display">25:00</div>
+      <div class="timer-label" id="timer-label">Focus</div>
+    </div>
+  </div>
+  <div class="timer-round">Round <span id="round-num">1</span></div>
+  <div class="timer-controls">
+    <button class="timer-btn reset" onclick="resetTimer()"><i data-lucide="rotate-ccw" style="width:14px;height:14px;margin-right:4px"></i> Reset</button>
+    <button class="timer-btn start" id="start-btn" onclick="toggleTimer()"><i data-lucide="play" style="width:14px;height:14px;margin-right:4px;fill:currentColor"></i> Start</button>
+  </div>
+  <div class="timer-note">Timer synced with all room members</div>
+</div>
+<script src="/features/timer/timer.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
