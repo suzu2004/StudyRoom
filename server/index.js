@@ -64,10 +64,22 @@ app.get('/chess', (req, res) => res.sendFile(path.join(__dirname, '../public/cor
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, '../public/core/pages/chat.html')));
 app.get('/chat/:chatId', (req, res) => res.sendFile(path.join(__dirname, '../public/core/pages/chat.html')));
 
+// ── Health check endpoint (for UptimeRobot / Render keep-alive) ──
+app.get('/health', (_req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
+
 setupCoreHandlers(io);
 connectMongo();
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`StudyRoom → http://localhost:${PORT}`));
- 
+server.listen(PORT, () => {
+  console.log(`StudyRoom → http://localhost:${PORT}`);
 
+  // ── Self-ping keep-alive (prevents Render free-tier 15-min sleep) ──
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL; // Render sets this automatically
+  if (RENDER_URL) {
+    setInterval(() => {
+      fetch(`${RENDER_URL}/health`).catch(() => {});
+    }, 13 * 60 * 1000); // every 13 minutes
+    console.log(`Keep-alive ping → ${RENDER_URL}/health every 13m`);
+  }
+});
