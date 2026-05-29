@@ -6,7 +6,3 @@ node_modules
 *.log
 Dockerfile
 .dockerignore
-bun.lockb
-bun.lock
-package-lock.json
-package.json
