@@ -1,0 +1,12 @@
+node_modules
+.env
+.env.*
+.git
+.gitignore
+*.log
+Dockerfile
+.dockerignore
+bun.lockb
+bun.lock
+package-lock.json
+package.json
